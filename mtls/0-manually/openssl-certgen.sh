@@ -1,8 +1,9 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # Generate CA key and cert
 
-cat > ca-csr.json <<EOL
+mkdir -p certs/ca
+cat > certs/ca/csr.json <<EOL
 {
     "hosts": [
         "127.0.0.1",
@@ -23,15 +24,15 @@ cat > ca-csr.json <<EOL
     ]
 }
 EOL
+cfssl genkey -initca certs/ca/csr.json | cfssljson -bare certs/ca/tls
 
-mkdir -p certs/ca
-cfssl genkey -initca ca-csr.json | cfssljson -bare certs/ca/tls
-
-cat > server-csr.json <<EOL
+mkdir -p certs/server
+cat > certs/server/csr.json <<EOL
 {
     "hosts": [
         "127.0.0.1",
-        "localhost"
+        "localhost",
+        "server"
     ],
     "key": {
         "algo": "rsa",
@@ -49,12 +50,11 @@ cat > server-csr.json <<EOL
     ]
 }
 EOL
-
-mkdir -p certs/server
 cp certs/ca/tls.pem certs/server/ca.pem
-cfssl gencert -ca certs/ca/tls.pem -ca-key certs/ca/tls-key.pem server-csr.json | cfssljson -bare certs/server/tls
+cfssl gencert -ca certs/ca/tls.pem -ca-key certs/ca/tls-key.pem certs/server/csr.json | cfssljson -bare certs/server/tls
 
-cat > client-csr.json <<EOL
+mkdir -p certs/client
+cat > certs/client/csr.json <<EOL
 {
     "hosts": [
         "127.0.0.1",
@@ -77,7 +77,5 @@ cat > client-csr.json <<EOL
     ]
 }
 EOL
-
-mkdir -p certs/client
 cp certs/ca/tls.pem certs/client/ca.pem
-cfssl gencert -ca certs/ca/tls.pem -ca-key certs/ca/tls-key.pem client-csr.json | cfssljson -bare certs/client/tls
+cfssl gencert -ca certs/ca/tls.pem -ca-key certs/ca/tls-key.pem certs/client/csr.json | cfssljson -bare certs/client/tls

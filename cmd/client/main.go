@@ -21,6 +21,11 @@ func main() {
 	keyFile := os.Args[2]
 	caFile := os.Args[3]
 
+	target := "https://localhost:8443"
+	if len(os.Args) >= 5 {
+		target = os.Args[4]
+	}
+
 	caCert, err := ioutil.ReadFile(caFile)
 	if err != nil {
 		panic(err)
@@ -43,16 +48,18 @@ func main() {
 		},
 	}
 
-	resp, err := client.Get("https://localhost:8443")
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
+	for range time.Tick(time.Second) {
+		resp, err := client.Get(target)
+		if err != nil {
+			panic(err)
+		}
+		defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			panic(err)
+		}
 
-	fmt.Println("GOT:", string(body))
+		fmt.Println("GOT:", string(body))
+	}
 }
