@@ -26,9 +26,15 @@ func main() {
 	caCertPool := x509.NewCertPool()
 	caCertPool.AppendCertsFromPEM(caCert)
 
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		panic(err)
+	}
+
 	tlsConfig := &tls.Config{
-		ClientCAs:  caCertPool,
-		ClientAuth: tls.RequireAndVerifyClientCert,
+		ClientCAs:    caCertPool,
+		ClientAuth:   tls.RequireAndVerifyClientCert,
+		Certificates: []tls.Certificate{cert},
 	}
 	tlsConfig.BuildNameToCertificate()
 
@@ -40,7 +46,9 @@ func main() {
 			fmt.Fprintf(w, "Hello %q from tls!", commonName)
 		}),
 	}
-	err = server.ListenAndServeTLS(certFile, keyFile)
+
+	fmt.Println("Starting HTTPS server on :8443")
+	err = server.ListenAndServeTLS("", "")
 	if err != nil {
 		panic(err)
 	}

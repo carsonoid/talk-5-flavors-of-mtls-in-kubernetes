@@ -24,8 +24,8 @@ cat > ca-csr.json <<EOL
 }
 EOL
 
-cfssl genkey -initca csr.json | cfssljson -bare ca
-
+mkdir -p certs/ca
+cfssl genkey -initca ca-csr.json | cfssljson -bare certs/ca/tls
 
 cat > server-csr.json <<EOL
 {
@@ -50,7 +50,9 @@ cat > server-csr.json <<EOL
 }
 EOL
 
-cfssl gencert -ca ca.pem -ca-key ca-key.pem server-csr.json | cfssljson -bare server
+mkdir -p certs/server
+cp certs/ca/tls.pem certs/server/ca.pem
+cfssl gencert -ca certs/ca/tls.pem -ca-key certs/ca/tls-key.pem server-csr.json | cfssljson -bare certs/server/tls
 
 cat > client-csr.json <<EOL
 {
@@ -76,4 +78,6 @@ cat > client-csr.json <<EOL
 }
 EOL
 
-cfssl gencert -ca ca.pem -ca-key ca-key.pem client-csr.json | cfssljson -bare client
+mkdir -p certs/client
+cp certs/ca/tls.pem certs/client/ca.pem
+cfssl gencert -ca certs/ca/tls.pem -ca-key certs/ca/tls-key.pem client-csr.json | cfssljson -bare certs/client/tls
