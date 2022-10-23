@@ -4,6 +4,7 @@ docker build -t carsonoid/go-test-app ../../..
 docker save carsonoid/go-test-app -o app.tar
 k3d image import app.tar
 
+# CA not added at all to cluster
 
 kubectl delete secret server-tls || true
 kubectl create secret generic server-tls \

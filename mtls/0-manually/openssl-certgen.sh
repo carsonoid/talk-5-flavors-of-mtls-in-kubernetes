@@ -47,6 +47,10 @@ cat > certs/server/csr.json <<EOL
             "OU": "Infra",
             "ST": "Utah"
         }
+    ],
+    "usages": [
+        "server auth"
+        "client auth"
     ]
 }
 EOL
@@ -74,6 +78,10 @@ cat > certs/client/csr.json <<EOL
             "OU": "Infra",
             "ST": "Utah"
         }
+    ],
+    "usages": [
+        "server auth"
+        "client auth"
     ]
 }
 EOL
