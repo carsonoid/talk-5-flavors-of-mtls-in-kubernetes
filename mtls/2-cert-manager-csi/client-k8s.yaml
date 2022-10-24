@@ -75,7 +75,10 @@ spec:
       securityContext: {}
       terminationGracePeriodSeconds: 30
       volumes:
-      - name: tls
-        secret:
-          defaultMode: 420
-          secretName: client-tls
+        - name: tls
+          csi:
+            driver: csi.cert-manager.io
+            volumeAttributes:
+              csi.cert-manager.io/issuer-name: ca-issuer
+              csi.cert-manager.io/dns-names: ${POD_NAME}.${POD_NAMESPACE}.svc.cluster.local
+              csi.cert-manager.io/common-name: ${POD_NAME} # NOTE: could break as common name is limited to 64 chars and pod names can be larger

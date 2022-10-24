@@ -1,46 +1,17 @@
 ---
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: client
-spec:
-  # Secret names are always required.
-  secretName: client-tls
-  duration: 2160h # 90d
-  renewBefore: 360h # 15d
-  subject:
-    organizations:
-      - UT Kubernetes
-  commonName: client
-  privateKey:
-    algorithm: RSA
-    encoding: PKCS1
-    size: 2048
-  usages:
-    - server auth
-    - client auth
-  dnsNames:
-    - localhost
-    - client
-  ipAddresses:
-    - 127.0.0.1
-  issuerRef:
-    name: ca-issuer
-    kind: ClusterIssuer
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: test-client
-  name: test-client
+    app: test-server
+  name: test-server
 spec:
   progressDeadlineSeconds: 600
-  replicas: 2
+  replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: test-client
+      app: test-server
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -50,15 +21,14 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        app: test-client
+        app: test-server
     spec:
       containers:
       - args:
-        - /client
+        - /server
         - /tls/tls.crt
         - /tls/tls.key
         - /tls/ca.crt
-        - https://server:8443
         image: carsonoid/go-test-app
         imagePullPolicy: IfNotPresent
         name: go-test-app
@@ -75,7 +45,28 @@ spec:
       securityContext: {}
       terminationGracePeriodSeconds: 30
       volumes:
-      - name: tls
-        secret:
-          defaultMode: 420
-          secretName: client-tls
+        - name: tls
+          csi:
+            readOnly: true
+            driver: csi.cert-manager.io
+            volumeAttributes:
+              csi.cert-manager.io/issuer-kind: ClusterIssuer
+              csi.cert-manager.io/issuer-name: vault-issuer
+              csi.cert-manager.io/dns-names: ${POD_NAME}.${POD_NAMESPACE}.svc.cluster.local
+              csi.cert-manager.io/common-name: ${POD_NAME} # NOTE: could break as common name is limited to 64 chars and pod names can be larger
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: test-server
+  name: server
+spec:
+  ports:
+  - port: 8443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app: test-server
+  sessionAffinity: None
+  type: ClusterIP
