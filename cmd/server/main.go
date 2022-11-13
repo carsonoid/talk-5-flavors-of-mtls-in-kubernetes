@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -42,8 +43,9 @@ func main() {
 		Addr:      ":8443",
 		TLSConfig: tlsConfig,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			commonName := r.TLS.VerifiedChains[0][0].Subject.CommonName
-			fmt.Fprintf(w, "Hello %q from tls!", commonName)
+			names := r.TLS.VerifiedChains[0][0].DNSNames
+			fmt.Printf("Got mTLS request from %v\n", names)
+			fmt.Fprintf(w, "Hello %s! Thanks for using mTLS! ", strings.Join(names, "/"))
 		}),
 	}
 

@@ -55,11 +55,13 @@ func main() {
 		}
 		defer resp.Body.Close()
 
+		fmt.Println("> Secure connection to: " + resp.TLS.ServerName)
+
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			panic(err)
 		}
 
-		fmt.Println("GOT:", string(body))
+		fmt.Println("< GOT:", string(body))
 	}
 }
