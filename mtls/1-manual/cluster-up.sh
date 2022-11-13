@@ -26,3 +26,7 @@ kubectl create secret generic client-tls \
 # Create client and server
 kubectl apply -f server-k8s.yaml
 kubectl apply -f client-k8s.yaml
+
+kubectl wait --for=condition=Available=True deployment/test-server deployment/test-client
+
+kubetail --follow --skip-colors

@@ -1,0 +1,30 @@
+# 5 Flavors of mTLS in Kubernetes
+We can do it!
+
+Carson Anderson
+DevX-O, Weave
+@carson_ops
+
+https://github.com/carsonoid/5-flavors-of-mtls-in-kubernetes
+
+## Foundations of TLS
+
+## Why mTLS?
+
+## How?
+
+## Flavor 0: No TLS
+
+.code mtls/0-none/cluster-up.sh /k3d cluster create/,/kubetail/
+
+.play mtls/0-none/present.go /START OMIT/,/END OMIT/
+
+## Flavor 1: Manual mTLS
+
+## Flavor 2: Cert-Manager mTLS by Hand
+
+## Flavor 3: Cert-Manager mTLS via CSI
+
+## Flavor 4: mTLS via A Service Mesh
+
+<!-- .play examples/ugly.go /START OMIT/,/END OMIT/ -->

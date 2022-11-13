@@ -19,3 +19,7 @@ linkerd install | kubectl apply -f -
 # Setup client and server
 linkerd inject server-k8s.yaml | kubectl apply -f -
 linkerd inject client-k8s.yaml | kubectl apply -f -
+
+kubectl wait --for=condition=Available=True deployment/test-server deployment/test-client
+
+kubetail --follow --skip-colors
