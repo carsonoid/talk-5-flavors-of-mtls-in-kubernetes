@@ -49,7 +49,7 @@ cat > certs/server/csr.json <<EOL
         }
     ],
     "usages": [
-        "server auth"
+        "server auth",
         "client auth"
     ]
 }
@@ -80,7 +80,7 @@ cat > certs/client/csr.json <<EOL
         }
     ],
     "usages": [
-        "server auth"
+        "server auth",
         "client auth"
     ]
 }

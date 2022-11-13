@@ -30,7 +30,7 @@ spec:
         - /tls/tls.key
         - /tls/ca.crt
         image: carsonoid/go-test-app
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Never
         name: go-test-app
         resources: {}
         terminationMessagePath: /dev/termination-log

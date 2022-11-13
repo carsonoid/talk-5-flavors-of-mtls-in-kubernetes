@@ -22,13 +22,12 @@ func main() {
 		}
 		defer resp.Body.Close()
 
-		fmt.Println(resp.Header)
-
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			panic(err)
 		}
 
-		fmt.Println("< GOT:", string(body))
+		fmt.Println("< Response Headers:", resp.Header)
+		fmt.Println("< Response Body:", string(body))
 	}
 }

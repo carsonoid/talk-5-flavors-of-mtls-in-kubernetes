@@ -1,33 +1,3 @@
----
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: client
-spec:
-  # Secret names are always required.
-  secretName: client-tls
-  duration: 2160h # 90d
-  renewBefore: 360h # 15d
-  subject:
-    organizations:
-      - UT Kubernetes
-  commonName: client
-  privateKey:
-    algorithm: RSA
-    encoding: PKCS1
-    size: 2048
-  usages:
-    - server auth
-    - client auth
-  dnsNames:
-    - localhost
-    - client
-  ipAddresses:
-    - 127.0.0.1
-  issuerRef:
-    name: ca-issuer
-    kind: ClusterIssuer
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -36,7 +6,7 @@ metadata:
   name: test-client
 spec:
   progressDeadlineSeconds: 600
-  replicas: 2
+  replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
@@ -55,12 +25,12 @@ spec:
       containers:
       - args:
         - /secure-client
-        - /tls/tls.crt
-        - /tls/tls.key
-        - /tls/ca.crt
+        - /tls/tls.pem
+        - /tls/tls-key.pem
+        - /tls/ca.pem
         - https://server:8443
         image: carsonoid/go-test-app
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Never
         name: go-test-app
         resources: {}
         terminationMessagePath: /dev/termination-log

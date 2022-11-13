@@ -31,7 +31,7 @@ spec:
         - /tls/ca.crt
         - https://server.default.svc.cluster.local.:8443
         image: carsonoid/go-test-app
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Never
         name: go-test-app
         resources: {}
         terminationMessagePath: /dev/termination-log

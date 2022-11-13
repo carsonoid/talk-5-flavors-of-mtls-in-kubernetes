@@ -4,7 +4,6 @@ kind: Certificate
 metadata:
   name: server
 spec:
-  # Secret names are always required.
   secretName: server-tls
   duration: 2160h # 90d
   renewBefore: 360h # 15d
@@ -18,9 +17,7 @@ spec:
     size: 2048
   usages:
     - server auth
-    - client auth
   dnsNames:
-    - localhost
     - server
   ipAddresses:
     - 127.0.0.1
@@ -59,7 +56,7 @@ spec:
         - /tls/tls.key
         - /tls/ca.crt
         image: carsonoid/go-test-app
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Never
         name: go-test-app
         resources: {}
         terminationMessagePath: /dev/termination-log

@@ -44,7 +44,8 @@ func main() {
 		TLSConfig: tlsConfig,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			names := r.TLS.VerifiedChains[0][0].DNSNames
-			fmt.Printf("Got mTLS request from %v\n", names)
+			fmt.Printf("Verified Client Names: %v\n", names)
+			fmt.Println("Request Headers:", r.Header)
 			fmt.Fprintf(w, "Hello %s! Thanks for using mTLS! ", strings.Join(names, "/"))
 		}),
 	}

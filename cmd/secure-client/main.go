@@ -62,6 +62,7 @@ func main() {
 			panic(err)
 		}
 
-		fmt.Println("< GOT:", string(body))
+		fmt.Println("< Response Headers:", resp.Header)
+		fmt.Println("< Response Body:", string(body))
 	}
 }
