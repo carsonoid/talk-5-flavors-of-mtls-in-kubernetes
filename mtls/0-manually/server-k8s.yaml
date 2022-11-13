@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - args:
-        - /server
+        - /secure-server
         - /tls/tls.pem
         - /tls/tls-key.pem
         - /tls/ca.pem

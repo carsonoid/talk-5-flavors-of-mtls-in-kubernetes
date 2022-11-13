@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - args:
-        - /client
+        - /insecure-client
         - http://server.default.svc.cluster.local.:8080
         image: carsonoid/go-test-app
         imagePullPolicy: Never

@@ -4,12 +4,12 @@ WORKDIR /app
 
 COPY . .
 
-RUN CGO_ENABLED=0 go build -ldflags="-extldflags=-static" -o server ./cmd/server
-RUN CGO_ENABLED=0 go build -ldflags="-extldflags=-static" -o client ./cmd/client
+RUN CGO_ENABLED=0 go build -ldflags="-extldflags=-static" -o secure-server ./cmd/secure-server
+RUN CGO_ENABLED=0 go build -ldflags="-extldflags=-static" -o secure-client ./cmd/secure-client
+
+RUN CGO_ENABLED=0 go build -ldflags="-extldflags=-static" -o insecure-server ./cmd/insecure-server
+RUN CGO_ENABLED=0 go build -ldflags="-extldflags=-static" -o insecure-client ./cmd/insecure-client
 
 FROM scratch
 
-COPY --from=builder /app/server /server
-COPY --from=builder /app/client /client
-
-CMD [ "/server" ]
+COPY --from=builder /app/ /

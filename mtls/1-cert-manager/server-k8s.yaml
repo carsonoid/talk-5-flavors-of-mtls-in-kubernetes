@@ -54,7 +54,7 @@ spec:
     spec:
       containers:
       - args:
-        - /server
+        - /secure-server
         - /tls/tls.crt
         - /tls/tls.key
         - /tls/ca.crt

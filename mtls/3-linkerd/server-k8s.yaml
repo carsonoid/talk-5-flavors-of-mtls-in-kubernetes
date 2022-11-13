@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - args:
-        - /server
+        - /insecure-server
         image: carsonoid/go-test-app
         imagePullPolicy: Never
         name: go-test-app
