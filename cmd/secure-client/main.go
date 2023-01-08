@@ -25,19 +25,26 @@ func main() {
 	if len(os.Args) >= 5 {
 		target = os.Args[4]
 	}
+	// END CLIENT ARGS OMIT
 
+	// START CLIENT TLS OMIT
+	caCertPool, err := x509.SystemCertPool()
+	if err != nil {
+		panic(err)
+	}
 	caCert, err := ioutil.ReadFile(caFile)
 	if err != nil {
 		panic(err)
 	}
-	caCertPool := x509.NewCertPool()
 	caCertPool.AppendCertsFromPEM(caCert)
 
 	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
 		panic(err)
 	}
+	// END CLIENT TLS OMIT
 
+	// START CLIENT OMIT
 	client := &http.Client{
 		Timeout: time.Second * 5,
 		Transport: &http.Transport{
@@ -47,7 +54,9 @@ func main() {
 			},
 		},
 	}
+	// END CLIENT OMIT
 
+	// START CLIENT LOOP OMIT
 	for range time.Tick(time.Second) {
 		resp, err := client.Get(target)
 		if err != nil {
@@ -57,6 +66,9 @@ func main() {
 
 		fmt.Println("> Secure connection to: " + resp.TLS.ServerName)
 
+		names := resp.TLS.VerifiedChains[0][0].DNSNames
+		fmt.Println("> Server certificate Names:", names)
+
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			panic(err)
@@ -65,4 +77,5 @@ func main() {
 		fmt.Println("< Response Headers:", resp.Header)
 		fmt.Println("< Response Body:", string(body))
 	}
+	// END CLIENT LOOP OMIT
 }

@@ -68,8 +68,9 @@ at the Kubernetes DNS entry for our server service
 
 ## Generate Certs
 
-The manual examples here use CFSSL to generate certs
-and manage a certificate authority. There are many ways to do this
+One way to manually generate certs is to use CFSSL.
+
+There are many ways to do this
 but CFSSL is one of the easiest since it allows for JSON based configuration
 and can even be ran as a service.
 
@@ -89,13 +90,45 @@ and can even be ran as a service.
 
 .play mtls/1-manual/summary.go /START OMIT/,/END OMIT/
 
-## HTTPS Server
+## HTTPS Server Code
 
-.code cmd/secure-server/main.go /^func main\(\) \{/,/^\}/
+First, we need args to tell us where the ca, cert, and key are.
 
-## HTTPS Client
+.code cmd/secure-server/main.go /^func main\(\) \{/,/END ARGS OMIT/
 
-.code cmd/secure-client/main.go /^func main\(\) \{/,/^\}/
+## HTTPS Server Code
+
+Now build a cert pool, load the default root certs and add our self-signed
+
+.code cmd/secure-server/main.go /START CA OMIT/,/END CA OMIT/
+
+## HTTPS Server Code
+
+Next, load the keypair and create a tls config.
+
+.code cmd/secure-server/main.go /START TLS OMIT/,/END TLS OMIT/
+
+## HTTPS Server Code
+
+Finally, start the server.
+
+.code cmd/secure-server/main.go /START SERVE OMIT/,/END SERVE OMIT/
+
+## HTTPS Client Code
+
+.code cmd/secure-client/main.go /^func main\(\) \{/,/END CLIENT ARGS OMIT/
+
+## HTTPS Client Code
+
+.code cmd/secure-client/main.go /START CLIENT TLS OMIT/,/END CLIENT TLS OMIT/
+
+## HTTPS Client Code
+
+.code cmd/secure-client/main.go /START CLIENT OMIT/,/END CLIENT OMIT/
+
+## HTTPS Client Code
+
+.code cmd/secure-client/main.go /START CLIENT LOOP OMIT/,/END CLIENT LOOP OMIT/
 
 ## Flavor 2: Cert-Manager mTLS by Hand
 
