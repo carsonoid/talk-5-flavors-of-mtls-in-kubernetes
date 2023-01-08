@@ -15,6 +15,7 @@ func main() {
 		Timeout: time.Second * 5,
 	}
 
+	fmt.Println("Starting HTTP client request loop")
 	for range time.Tick(time.Second) {
 		resp, err := client.Get(target)
 		if err != nil {

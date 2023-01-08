@@ -15,9 +15,11 @@ spec:
         app: test-server
     spec:
       containers:
-      - args:
+      # START FOCUS OMIT
+      - image: carsonoid/go-test-app
+        args:
         - /insecure-server
-        image: carsonoid/go-test-app
+        # END FOCUS OMIT
         imagePullPolicy: Never
         name: go-test-app
       dnsPolicy: ClusterFirst

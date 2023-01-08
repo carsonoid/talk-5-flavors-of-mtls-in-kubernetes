@@ -19,19 +19,31 @@ https://github.com/carsonoid/5-flavors-of-mtls-in-kubernetes
 
 .code cmd/insecure-server/main.go /^func main\(\) \{/,/^\}/
 
-## HTTP Server Deployment
-
-.code mtls/0-none/server-k8s.yaml /^# Deployment/,/# .../
-
 ## HTTP Client Code
 
 .code cmd/insecure-client/main.go  /^func main\(\) \{/,/^\}/
 
+## Code Demo
+
+.code cmd/demo/simple.sh  /START DEMO OMIT/,/END DEMO OMIT/
+
+.play cmd/demo/simple.go /START OMIT/,/END OMIT/
+
+## Flavor 0: No TLS - Kubernetes
+
+## HTTP Server Deployment
+
+.code mtls/0-none/server-k8s.yaml /^# Deployment/,/# .../
+
+## HTTP Server Deployment - Simple!
+
+We can simply run the server process, nothing extra is required
+
+.code mtls/0-none/server-k8s.yaml /START FOCUS OMIT/,/END FOCUS OMIT/
+
 ## HTTP Client Deployment
 
 .code mtls/0-none/client-k8s.yaml
-
-## Flavor 0: No TLS - Demo
 
 .code mtls/0-none/cluster-up.sh /k3d cluster create/,/kubetail/
 
