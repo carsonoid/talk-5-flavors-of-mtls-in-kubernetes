@@ -24,7 +24,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	caCertPool := x509.NewCertPool()
+	caCertPool, err := x509.SystemCertPool()
+	if err != nil {
+		panic(err)
+	}
 	caCertPool.AppendCertsFromPEM(caCert)
 
 	cert, err := tls.LoadX509KeyPair(certFile, keyFile)

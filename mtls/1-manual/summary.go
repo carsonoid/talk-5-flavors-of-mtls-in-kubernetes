@@ -2,14 +2,14 @@ package main
 
 import "github.com/carsonoid/talk-all-the-mtls-in-k8s/internal/demo"
 
-const msg = `
+const basePath = `.`
+const script = `
+set -e
+
 // START OMIT
-Run it!
+ls -l certs/*
 // END OMIT
 `
-
-const basePath = `.`
-const script = `./cmd/demo/simple.sh`
 
 func main() {
 	demo.RunShellScript(basePath, script)

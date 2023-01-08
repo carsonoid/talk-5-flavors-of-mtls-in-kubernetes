@@ -66,13 +66,32 @@ at the Kubernetes DNS entry for our server service
 
 ## Flavor 1: Manual mTLS
 
+## Generate Certs
+
+The manual examples here use CFSSL to generate certs
+and manage a certificate authority. There are many ways to do this
+but CFSSL is one of the easiest since it allows for JSON based configuration
+and can even be ran as a service.
+
+## Generate CA
+
+.play mtls/1-manual/ca-gen.go /START OMIT/,/END OMIT/
+
+## Generate Server Cert
+
+.play mtls/1-manual/server-gen.go /START OMIT/,/END OMIT/
+
+## Generate Client Cert
+
+.play mtls/1-manual/client-gen.go /START OMIT/,/END OMIT/
+
 ## HTTPS Server
 
-.code cmd/insecure-server/main.go /^func main\(\) \{/,/^\}/
+.code cmd/secure-server/main.go /^func main\(\) \{/,/^\}/
 
 ## HTTPS Client
 
-.code cmd/insecure-client/main.go /^func main\(\) \{/,/^\}/
+.code cmd/secure-client/main.go /^func main\(\) \{/,/^\}/
 
 ## Flavor 2: Cert-Manager mTLS by Hand
 
