@@ -33,19 +33,34 @@ https://github.com/carsonoid/5-flavors-of-mtls-in-kubernetes
 
 ## HTTP Server Deployment
 
-.code mtls/0-none/server-k8s.yaml /^# Deployment/,/# .../
+.code mtls/0-none/server-k8s.yaml /^# Deployment/,/# END DEPLOYMENT OMIT/
 
-## HTTP Server Deployment - Simple!
+## HTTP Server Deployment - Args
 
 We can simply run the server process, nothing extra is required
 
 .code mtls/0-none/server-k8s.yaml /START FOCUS OMIT/,/END FOCUS OMIT/
 
+## HTTP Server Service
+
+.code mtls/0-none/server-k8s.yaml /template:$/,/END LABELS OMIT/
+
+.code mtls/0-none/server-k8s.yaml /# Service/,/type: ClusterIP/
+
 ## HTTP Client Deployment
 
-.code mtls/0-none/client-k8s.yaml
+.code mtls/0-none/client-k8s.yaml /^# Deployment/,/# END DEPLOYMENT OMIT/
 
-.code mtls/0-none/cluster-up.sh /k3d cluster create/,/kubetail/
+## HTTP Client Deployment - Args
+
+The client just needs to know where the server is. So we can easily point it
+at the Kubernetes DNS entry for our server service
+
+.code mtls/0-none/client-k8s.yaml /START FOCUS OMIT/,/END FOCUS OMIT/
+
+## Flabor 0: No TLS - Demo
+
+.code mtls/0-none/cluster-up.sh
 
 .play mtls/0-none/present.go /START OMIT/,/END OMIT/
 
@@ -65,4 +80,3 @@ We can simply run the server process, nothing extra is required
 
 ## Flavor 4: mTLS via A Service Mesh
 
-<!-- .play examples/ugly.go /START OMIT/,/END OMIT/ -->

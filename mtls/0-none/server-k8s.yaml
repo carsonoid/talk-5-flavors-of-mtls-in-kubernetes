@@ -10,9 +10,11 @@ spec:
     matchLabels:
       app: test-server
   template:
+    # set pod labels
     metadata:
       labels:
         app: test-server
+      # END LABELS OMIT
     spec:
       containers:
       # START FOCUS OMIT
@@ -24,6 +26,7 @@ spec:
         name: go-test-app
       dnsPolicy: ClusterFirst
       # ...
+      # END DEPLOYMENT OMIT
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}

@@ -29,7 +29,7 @@ It determines how the formatting actions are rendered.
 
 {{define "code"}}
   {{ $ext := "" }}
-  <div data-filename={{.FileName | printf "%q"}} class="code{{if playable .}} playground{{end}}" {{if .Edit}}contenteditable="true" spellcheck="false"{{end}}>{{.Text}}</div>
+  <div data-filename={{.FileName}} class="code{{if playable .}} playground{{end}}" {{if .Edit}}contenteditable="true" spellcheck="false"{{end}}>{{.Text}}</div>
 {{end}}
 
 {{define "image"}}

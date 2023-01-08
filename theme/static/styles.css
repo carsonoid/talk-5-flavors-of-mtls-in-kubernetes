@@ -588,3 +588,7 @@ blockquote:before {
 blockquote p {
   display: inline;
 }
+
+div.code, pre.code {
+  background: rgb(250, 250, 250);
+}
