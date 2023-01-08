@@ -17,5 +17,3 @@ case $1 in
     $GO_ORIG_BIN "$@"
     ;;
 esac
-
-ls

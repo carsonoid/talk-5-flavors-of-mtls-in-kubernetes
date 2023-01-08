@@ -77,13 +77,17 @@ and can even be ran as a service.
 
 .play mtls/1-manual/ca-gen.go /START OMIT/,/END OMIT/
 
-## Generate Server Cert
+## Generate Server Files
 
 .play mtls/1-manual/server-gen.go /START OMIT/,/END OMIT/
 
-## Generate Client Cert
+## Generate Client Files
 
 .play mtls/1-manual/client-gen.go /START OMIT/,/END OMIT/
+
+## Generated Files
+
+.play mtls/1-manual/summary.go /START OMIT/,/END OMIT/
 
 ## HTTPS Server
 
