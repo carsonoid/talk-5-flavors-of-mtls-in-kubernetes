@@ -11,6 +11,42 @@
     </script>
     <script src='/static/slides.js'></script>
 
+    <link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/base16/github.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+
+
+    <script>
+      document.addEventListener('DOMContentLoaded', (event) => {
+        // read all code tags and add a class based on the content of the data-filename attribute
+        var elements = document.getElementsByClassName("code");
+        for (var i = 0; i < elements.length; i++) {
+            var e = elements[i];
+            var pre = e.getElementsByTagName("pre")[0];
+            if (!pre) {
+                continue;
+            }
+            var spans = pre.getElementsByTagName("span");
+            var text = "";
+            for (var j = spans.length - 1; j >= 0; j--) {
+                text = "\n" + text;
+                text = spans[j].textContent + text;
+                spans[j].parentNode.removeChild(spans[j]);
+            }
+            pre.classList.add("hljs");
+            pre.classList.add("code");
+            pre.classList.add(e.getAttribute("data-filename").split(".").pop());
+
+            pre.textContent = text;
+        }
+
+        // highlight all code tags
+        document.querySelectorAll('pre.code').forEach((el) => {
+          hljs.highlightElement(el);
+        });
+      });
+    </script>
+
     {{if .NotesEnabled}}
     <script>
       var sections = {{.Sections}};

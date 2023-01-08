@@ -15,11 +15,37 @@ https://github.com/carsonoid/5-flavors-of-mtls-in-kubernetes
 
 ## Flavor 0: No TLS
 
+## HTTP Server Code
+
+.code cmd/insecure-server/main.go /^func main\(\) \{/,/^\}/
+
+## HTTP Server Deployment
+
+.code mtls/0-none/server-k8s.yaml /^# Deployment/,/# .../
+
+## HTTP Client Code
+
+.code cmd/insecure-client/main.go  /^func main\(\) \{/,/^\}/
+
+## HTTP Client Deployment
+
+.code mtls/0-none/client-k8s.yaml
+
+## Flavor 0: No TLS - Demo
+
 .code mtls/0-none/cluster-up.sh /k3d cluster create/,/kubetail/
 
 .play mtls/0-none/present.go /START OMIT/,/END OMIT/
 
 ## Flavor 1: Manual mTLS
+
+## HTTPS Server
+
+.code cmd/insecure-server/main.go /^func main\(\) \{/,/^\}/
+
+## HTTPS Client
+
+.code cmd/insecure-client/main.go /^func main\(\) \{/,/^\}/
 
 ## Flavor 2: Cert-Manager mTLS by Hand
 
