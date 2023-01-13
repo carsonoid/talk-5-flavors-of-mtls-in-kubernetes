@@ -9,11 +9,27 @@ https://github.com/carsonoid/5-flavors-of-mtls-in-kubernetes
 
 ## Foundations of TLS
 
+TODO: Diagram of client-server without tls
+
+TODO: Diagram of client-server with TLS
+
 ## Why mTLS?
 
-## How?
+TODO: Diagram of client-server with mTLS
 
-## Flavor 0: No TLS
+## What are we going to do?
+
+* No TLS
+* Manual mTLS
+* Cert-Manager mTLS by Hand
+* Cert-Manager mTLS via CSI
+* mTLS via A Service Mesh
+
+
+
+
+
+## Basic HTTP Code
 
 ## HTTP Server Code
 
@@ -25,11 +41,13 @@ https://github.com/carsonoid/5-flavors-of-mtls-in-kubernetes
 
 ## Code Demo
 
-.code cmd/demo/simple.sh  /START DEMO OMIT/,/END DEMO OMIT/
-
 .play cmd/demo/simple.go /START OMIT/,/END OMIT/
 
-## Flavor 0: No TLS - Kubernetes
+
+
+
+
+## Flavor 0: No TLS
 
 ## HTTP Server Deployment
 
@@ -54,41 +72,25 @@ We can simply run the server process, nothing extra is required
 ## HTTP Client Deployment - Args
 
 The client just needs to know where the server is. So we can easily point it
-at the Kubernetes DNS entry for our server service
+at the Kubernetes DNS entry for our server service.
+
+Again, no extra security config here.
 
 .code mtls/0-none/client-k8s.yaml /START FOCUS OMIT/,/END FOCUS OMIT/
 
-## Flabor 0: No TLS - Demo
-
-.code mtls/0-none/cluster-up.sh
+## Kubernetes Demo
 
 .play mtls/0-none/present.go /START OMIT/,/END OMIT/
 
-## Flavor 1: Manual mTLS
+## What happened?
 
-## Generate Certs
+TODO: diagram of how this works in k8s
 
-One way to manually generate certs is to use CFSSL.
 
-There are many ways to do this
-but CFSSL is one of the easiest since it allows for JSON based configuration
-and can even be ran as a service.
 
-## Generate CA
 
-.play mtls/1-manual/ca-gen.go /START OMIT/,/END OMIT/
 
-## Generate Server Files
-
-.play mtls/1-manual/server-gen.go /START OMIT/,/END OMIT/
-
-## Generate Client Files
-
-.play mtls/1-manual/client-gen.go /START OMIT/,/END OMIT/
-
-## Generated Files
-
-.play mtls/1-manual/summary.go /START OMIT/,/END OMIT/
+## mTLS Code Changes
 
 ## HTTPS Server Code
 
@@ -130,9 +132,110 @@ Finally, start the server.
 
 .code cmd/secure-client/main.go /START CLIENT LOOP OMIT/,/END CLIENT LOOP OMIT/
 
-## Flavor 2: Cert-Manager mTLS by Hand
+
+
+
+
+
+## Flavor 1: Manual mTLS
+
+## Certificate Generation
+
+One way to manually generate certs is to use CFSSL.
+
+There are many ways to do this
+but CFSSL is one of the easiest since it allows for JSON based configuration
+and can even be ran as a service.
+
+.link https://github.com/cloudflare/cfssl
+
+## Manual mTLS - Generate CA
+
+.play mtls/1-manual/ca-gen.go /START OMIT/,/END OMIT/
+
+## Manual mTLS - Generate Server Files
+
+.play mtls/1-manual/server-gen.go /START OMIT/,/END OMIT/
+
+## Manual mTLS - Generate Client Files
+
+.play mtls/1-manual/client-gen.go /START OMIT/,/END OMIT/
+
+## Manual mTLS - Generated Files
+
+We can use the find command to walk the cert directory and print all the files we generated
+
+.play mtls/1-manual/summary.go /START OMIT/,/END OMIT/
+
+## Manual mTLS - Local exec demo
+
+.play mtls/1-manual/cmd-demo.go /START OMIT/,/END OMIT/
+
+## Manual mTLS - Kubernetes Server Changes
+
+## Manual mTLS - Volume Mount and Use
+
+Mount a k8s secret (we will create this later) as a volume
+
+.code mtls/1-manual/server-k8s.yaml /START VOL OMIT/,/END VOL OMIT/
+
+.code mtls/1-manual/server-k8s.yaml /START MOUNT OMIT/,/END MOUNT OMIT/
+
+This will result in all the keys in the secret created as files in the `mountPath`. So the args can be updated to:
+
+.code mtls/1-manual/server-k8s.yaml /START ARGS OMIT/,/END ARGS OMIT/
+
+## Manual mTLS - Kubernetes Client Changes
+
+## Manual mTLS - Volume Mount and Use
+
+Basically identical to the Server changes but with a different secret name
+
+.code mtls/1-manual/client-k8s.yaml /START VOL OMIT/,/END VOL OMIT/
+
+.code mtls/1-manual/client-k8s.yaml /START MOUNT OMIT/,/END MOUNT OMIT/
+
+.code mtls/1-manual/client-k8s.yaml /START ARGS OMIT/,/END ARGS OMIT/
+
+## Manual mTLS - Kubernetes Demo
+
+## Manual mTLS - Cluster Setup
+
+Cluster setup is the same as our main demo, but we use a new cluser name to keep things clean
+
+.code mtls/1-manual/k8s-demo.go /START CLUSTER OMIT/,/END CLUSTER OMIT/
+
+## Manual mTLS - Create Secrets
+
+NEW: We have to run commands to create the required secrets for the client and server
+
+.code mtls/1-manual/k8s-demo.go /START CERTS OMIT/,/END CERTS OMIT/
+
+## Manual mTLS - Deployments
+
+Finally, we can create the client and server
+
+.play mtls/1-manual/k8s-demo.go /START RUN OMIT/,/END RUN OMIT/
+
+
+
+
+
+## Cert-Manager mTLS by Hand
+
+## Cert-Manager mTLS by Hand - Cert-Manger Setup
+
+## Cert-Manager mTLS by Hand - Kubernetes Server Cert Issue
+
+
+
+
 
 ## Flavor 3: Cert-Manager mTLS via CSI
+
+
+
+
 
 ## Flavor 4: mTLS via A Service Mesh
 

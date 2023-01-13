@@ -592,3 +592,9 @@ blockquote p {
 div.code, pre.code {
   background: rgb(250, 250, 250);
 }
+
+svg[id^="mermaid-"] {
+  max-width: none !important;
+  line-height: normal !important;
+  letter-spacing: normal !important;
+}

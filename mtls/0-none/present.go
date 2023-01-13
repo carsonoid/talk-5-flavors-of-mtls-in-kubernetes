@@ -1,30 +1,36 @@
 package main
 
-import (
-	"os"
-	"os/exec"
-	"syscall"
-)
+import "github.com/carsonoid/talk-all-the-mtls-in-k8s/internal/demo"
 
-const msg = `
+const basePath = `./mtls/0-none/`
+const script = `
+set -e
+
 // START OMIT
-Run it!
+# use the find command to walk the cert directory and print all the files
+#!/bin/bash
+
+# Create a new cluster for flavor 0
+k3d cluster create 0-none
+
+# Build and import the image
+docker build -t carsonoid/go-test-app ../..
+docker save carsonoid/go-test-app -o app.tar
+k3d image import -c 0-none app.tar
+
+# Deploy the server and client
+kubectl apply -f server-k8s.yaml
+kubectl apply -f client-k8s.yaml
+
+# Wait for the deployments to be ready
+kubectl wait --for=condition=Available=True \
+    deployment/test-server deployment/test-client
+
+# Watch the logs
+kubetail --follow --skip-colors
 // END OMIT
 `
 
-const basePath = "./mtls/0-none/"
-
 func main() {
-	err := os.Chdir(basePath)
-	if err != nil {
-		panic(err)
-	}
-
-	cmd := exec.Command("bash", "./cluster-up.sh")
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Pdeathsig: syscall.SIGTERM,
-	}
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Run()
+	demo.RunShellScript(basePath, script)
 }

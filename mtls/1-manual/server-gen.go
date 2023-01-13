@@ -29,7 +29,8 @@ cat > certs/server/csr.json <<EOL
 EOL
 
 cp certs/ca/tls.pem certs/server/ca.pem
-cfssl gencert -ca certs/ca/tls.pem -ca-key certs/ca/tls-key.pem certs/server/csr.json | cfssljson -bare certs/server/tls
+cfssl gencert -ca certs/ca/tls.pem -ca-key certs/ca/tls-key.pem \
+    certs/server/csr.json | cfssljson -bare certs/server/tls
 // END OMIT
 `
 
