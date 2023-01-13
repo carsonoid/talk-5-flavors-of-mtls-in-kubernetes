@@ -345,7 +345,51 @@ And update the volume - but use `client` this time
 
 .play mtls/3-cert-manager-csi/k8s-demo.go /START RUN OMIT/,/END RUN OMIT/
 
+## Cert-Manager mTLS via CSI - What Happened?
+
+TODO: Diagram what happened
+
+
+
 
 
 ## Flavor 4: mTLS via A Service Mesh
+
+## Service Mesh (linkerd) - Setup
+
+.code mtls/4-linkerd/k8s-demo.go /START LINKERD OMIT/,/END LINKERD OMIT/
+
+## Service Mesh (linkerd) - Code Changes
+
+The whole point of a Service Mesh is that the mtls happens outside the app.
+
+So our deployments now revert to the "insecure" versions because the mTLS is automatic
+
+## Service Mesh (linkerd) - Server Code
+
+.code cmd/insecure-server/main.go /^func main\(\) \{/,/^\}/
+
+## Service Mesh (linkerd) - Client Code
+
+.code cmd/insecure-client/main.go /^func main\(\) \{/,/^\}/
+
+## Service Mesh (linkerd) - Deployment Changes
+
+Again, we simply revert our `Deployments` to the original yaml with no mTLS config
+
+Server deploy Snippet:
+
+.code mtls/0-none/server-k8s.yaml /START FOCUS OMIT/,/END FOCUS OMIT/
+
+Client deploy Snippet:
+
+.code mtls/0-none/client-k8s.yaml /START FOCUS OMIT/,/END FOCUS OMIT/
+
+## Service Mesh (linkerd) - Kubernetes Demo
+
+.play mtls/4-linkerd/k8s-demo.go /START RUN OMIT/,/END RUN OMIT/
+
+## Service Mesh (linkerd) - What Happened?
+
+TODO: Diagram what happened
 
