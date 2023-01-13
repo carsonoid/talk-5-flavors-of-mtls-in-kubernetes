@@ -1,22 +1,21 @@
+# START CERT OMIT
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: server
 spec:
+  # START SN OMIT
   secretName: server-tls
+  # END SN OMIT
   duration: 2160h # 90d
   renewBefore: 360h # 15d
-  subject:
-    organizations:
-      - UT Kubernetes
-  commonName: server
-  privateKey:
-    algorithm: RSA
-    encoding: PKCS1
-    size: 2048
+  subject: { organizations: ["UT Kubernetes"] }
+  privateKey: { algorithm: RSA, encoding: PKCS1, size: 2048 }
   usages:
     - server auth
+    - client auth
+  commonName: server
   dnsNames:
     - server
   ipAddresses:
@@ -24,6 +23,7 @@ spec:
   issuerRef:
     name: ca-issuer
     kind: ClusterIssuer
+# END CERT OMIT
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -50,14 +50,16 @@ spec:
         app: test-server
     spec:
       containers:
-      - args:
+      - name: go-test-app
+        # START ARGS OMIT
+        args:
         - /secure-server
         - /tls/tls.crt
         - /tls/tls.key
         - /tls/ca.crt
+        # END ARGS OMIT
         image: carsonoid/go-test-app
         imagePullPolicy: Never
-        name: go-test-app
         resources: {}
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
@@ -70,11 +72,13 @@ spec:
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
+      # START VOL OMIT
       volumes:
       - name: tls
         secret:
           defaultMode: 420
           secretName: server-tls
+      # END VOL OMIT
 ---
 apiVersion: v1
 kind: Service

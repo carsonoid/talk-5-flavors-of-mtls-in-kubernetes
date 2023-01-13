@@ -44,6 +44,7 @@ spec:
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
+      # START VOL OMIT
       volumes:
         - name: tls
           csi:
@@ -56,12 +57,15 @@ spec:
               # There are many valid k8s dns entries for the service
               # so we need to enumerate them all here.
               # We also include the full name of the pod here as well
-              csi.cert-manager.io/dns-names: server,server.${POD_NAMESPACE},server.${POD_NAMESPACE}.svc.cluster.local.,${POD_NAME}.${POD_NAMESPACE}.svc.cluster.local.
+              csi.cert-manager.io/dns-names: server,
+                server.${POD_NAMESPACE},
+                server.${POD_NAMESPACE}.svc.cluster.local.,
+                ${POD_NAME}.${POD_NAMESPACE}.svc.cluster.local.
 
-              # NOTE: could break as common name is limited to 64 chars and pod names can be larger
-              # this is one of the reasons that common name has been deprecated since the year 2000
-              # but it's included here to show that it *is* possible to set if needed for legacy software
-              csi.cert-manager.io/common-name: ${POD_NAME}
+              # Common Name has been deprecated since **the year 2000**
+              # but it's included here to show that it *is* possible to set
+              csi.cert-manager.io/common-name: server
+      # END VOL OMIT
 ---
 apiVersion: v1
 kind: Service

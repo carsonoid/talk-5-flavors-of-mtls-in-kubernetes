@@ -45,6 +45,7 @@ spec:
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
+      # START VOL OMIT
       volumes:
         - name: tls
           csi:
@@ -53,11 +54,9 @@ spec:
             volumeAttributes:
               csi.cert-manager.io/issuer-kind: ClusterIssuer
               csi.cert-manager.io/issuer-name: vault-issuer
-
-              # We don't expect other services to need to access this client pod, so we have no service dns names here
-              csi.cert-manager.io/dns-names: ${POD_NAME},${POD_NAME}.${POD_NAMESPACE}.svc.cluster.local.
-
-              # NOTE: could break as common name is limited to 64 chars and pod names can be larger
-              # this is one of the reasons that common name has been deprecated since the year 2000
-              # but it's included here to show that it *is* possible to set if needed for legacy software
-              csi.cert-manager.io/common-name: ${POD_NAME}
+              csi.cert-manager.io/dns-names: client,
+                client.${POD_NAMESPACE},
+                client.${POD_NAMESPACE}.svc.cluster.local.,
+                ${POD_NAME}.${POD_NAMESPACE}.svc.cluster.local.
+              csi.cert-manager.io/common-name: client
+      # END VOL OMIT

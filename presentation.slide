@@ -199,12 +199,6 @@ Basically identical to the Server changes but with a different secret name
 
 ## Manual mTLS - Kubernetes Demo
 
-## Manual mTLS - Cluster Setup
-
-Cluster setup is the same as our main demo, but we use a new cluser name to keep things clean
-
-.code mtls/1-manual/k8s-demo.go /START CLUSTER OMIT/,/END CLUSTER OMIT/
-
 ## Manual mTLS - Create Secrets
 
 NEW: We have to run commands to create the required secrets for the client and server
@@ -225,7 +219,69 @@ Finally, we can create the client and server
 
 ## Cert-Manager mTLS by Hand - Cert-Manger Setup
 
-## Cert-Manager mTLS by Hand - Kubernetes Server Cert Issue
+This can be done whatever way works best for your cluster, but for our demo we just init the basics:
+
+.code mtls/2-cert-manager/k8s-demo.go /START CM OMIT/,/END CM OMIT/
+
+## Cert-Manager mTLS by Hand - Cert-Manger CA Issue
+
+We still need to issue a CA cert and key and create it
+
+.code mtls/2-cert-manager/k8s-demo.go /START CA OMIT/,/END CA OMIT/
+
+## Cert-Manager mTLS by Hand - Cert-Manger Issuer
+
+Next, we create a `ClusterIssuer` to tell cert-manager how to find the ca cert for issuing new certs
+
+.code mtls/2-cert-manager/k8s-demo.go /START ISSUER OMIT/,/END ISSUER OMIT/
+
+## Cert-Manager mTLS by Hand - Kubernetes Server Cert
+
+.code mtls/2-cert-manager/server-k8s.yaml /START CERT OMIT/,/END CERT OMIT/
+
+## Cert-Manager mTLS by Hand - Kubernetes Server Changes
+
+Since we we told cert-manager to create the secret at the name we already expect we do not have to change the volume info
+
+.code mtls/2-cert-manager/server-k8s.yaml /START SN OMIT/,/END SN OMIT/
+
+.code mtls/2-cert-manager/server-k8s.yaml /START VOL OMIT/,/END VOL OMIT/
+
+## Cert-Manager mTLS by Hand - Kubernetes Server Changes
+
+BUT! cert-managr makes the secret with different key names, so we have to tweak our args
+
+Old:
+
+.code mtls/1-manual/server-k8s.yaml /START ARGS OMIT/,/END ARGS OMIT/
+
+New:
+
+.code mtls/2-cert-manager/server-k8s.yaml /START ARGS OMIT/,/END ARGS OMIT/
+
+## Cert-Manager mTLS by Hand - Kubernetes Client Cert
+
+.code mtls/2-cert-manager/client-k8s.yaml /START CERT OMIT/,/END CERT OMIT/
+
+## Cert-Manager mTLS by Hand - Kubernetes Client Changes
+
+Just like with the server, we only need to change the args:
+
+Old:
+
+.code mtls/1-manual/client-k8s.yaml /START ARGS OMIT/,/END ARGS OMIT/
+
+New:
+
+.code mtls/2-cert-manager/client-k8s.yaml /START ARGS OMIT/,/END ARGS OMIT/
+
+## Cert-Manager mTLS by Hand - Kubernetes Demo
+
+.play mtls/2-cert-manager/k8s-demo.go /START RUN OMIT/,/END RUN OMIT/
+
+## Cert-Manager mTLS by Hand - What Just Happened?
+
+TODO: Diagram k8s flow
 
 
 
@@ -233,7 +289,61 @@ Finally, we can create the client and server
 
 ## Flavor 3: Cert-Manager mTLS via CSI
 
+## Cert-Manager mTLS via CSI - Cert-Manger Setup
 
+.code mtls/3-cert-manager-csi/k8s-demo.go /START CM OMIT/,/END CM OMIT/
+
+## Cert-Manager mTLS via CSI - Vault Install
+
+A self-signed CA is not supported for CSI so we need a proper PKI provider.
+So we will setup a dev-quality vault install to use for PKI.
+
+
+.code mtls/3-cert-manager-csi/k8s-demo.go /START VAULT INSTALL OMIT/,/END VAULT INSTALL OMIT/
+
+> Since we installed vault as a dev server instance, all vault settings and data will
+> be lost when the active vault pod is deleted.
+
+> You could use cloud services for PKI,
+  but vault is agnostic so it's the one used for the demo
+
+## Cert-Manager mTLS via CSI - Vault Prep
+
+Setup a port forward and env vars to Vault so we can configure it with the CLI
+
+.code mtls/3-cert-manager-csi/k8s-demo.go /START VAULT OMIT/,/END VAULT OMIT/
+
+> Not shown: Install the `vault` CLI
+
+## Cert-Manager mTLS via CSI - Vault Setup
+
+.code mtls/3-cert-manager-csi/k8s-demo.go /START VAULT SETUP OMIT/,/END VAULT SETUP OMIT/
+
+## Cert-Manager mTLS via CSI - Kubernetes Server Changes
+
+We do not need to create a `Certificate` anymore!
+
+.code mtls/3-cert-manager-csi/cert-gone.yaml
+
+Instead we just put all the details in the volume.
+
+## Cert-Manager mTLS via CSI - Server CSI Volume
+
+.code mtls/3-cert-manager-csi/server-k8s.yaml /START VOL OMIT/,/END VOL OMIT/
+
+## Cert-Manager mTLS via CSI - Client CSI Volume
+
+The client setup is identical no more cert:
+
+.code mtls/3-cert-manager-csi/cert-gone.yaml
+
+And update the volume - but use `client` this time
+
+.code mtls/3-cert-manager-csi/client-k8s.yaml /START VOL OMIT/,/END VOL OMIT/
+
+## Cert-Manager mTLS via CSI - Kubernetes Demo
+
+.play mtls/3-cert-manager-csi/k8s-demo.go /START RUN OMIT/,/END RUN OMIT/
 
 
 
