@@ -597,4 +597,5 @@ svg[id^="mermaid-"] {
   max-width: none !important;
   line-height: normal !important;
   letter-spacing: normal !important;
+  font-size: 10px !important;
 }

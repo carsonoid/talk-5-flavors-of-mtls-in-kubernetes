@@ -1,0 +1,7 @@
+flowchart TD
+    subgraph client[" "]
+    direction LR
+    insecure-client -.- poisoned-dns
+    insecure-client --> fake-server -.-> insecure-client
+    end
+    insecure-server

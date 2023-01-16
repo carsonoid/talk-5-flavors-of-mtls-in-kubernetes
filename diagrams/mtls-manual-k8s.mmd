@@ -1,0 +1,12 @@
+flowchart TD
+  ca[certificate authority]
+  ca --- secure-client
+  ca --- secure-server
+  subgraph _[ ]
+    client-key --- client-cert --> secure-client
+    secure-client --> secure-server
+    secure-server --- server-cert --- server-key
+    secure-server -.-> secure-client
+    secure-client ---|server.default.svc.cluster.local| kdns[Kubernetes DNS]
+    secure-client[client pod] --- server{{"server" k8s service LB}}  --> secure-server[server pod]
+end

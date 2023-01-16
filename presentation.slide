@@ -49,10 +49,7 @@ will follow the principles we lay down today and work with the same systems.
 3. Client sent it's entire request payload
 4. Server sent it's response
 
-```mermaid
-graph LR
-    insecure-client --> insecure-server -.-> insecure-client
-```
+.image diagrams/basic.mmd.png _ 700
 
 ## What Just Happened?
 
@@ -61,29 +58,15 @@ graph LR
 3. Client sent it's entire request payload
 4. Server sent it's response
 
-```mermaid
-graph LR
-    insecure-client --> insecure-server -.-> insecure-client
-```
+.image diagrams/basic.mmd.png _ 700
 
 ## What does that mean?
 
-```mermaid
-graph LR
-    insecure-client --- proxy --> insecure-server -.- proxy -.-> insecure-client
-```
+.image diagrams/basic-proxy.mmd.png _ 700
 
 ## What does that mean?
 
-```mermaid
-flowchart TD
-    subgraph client[" "]
-    direction LR
-    insecure-client -.- poisoned-dns
-    insecure-client --> fake-server -.-> insecure-client
-    end
-    insecure-server
-```
+.image diagrams/basic-poison.mmd.png _ 700
 
 ## Flavor 0 - No mTLS: Deployment
 
@@ -127,6 +110,8 @@ flowchart LR
   insecure-client ---|server.default.svc.cluster.local| kdns[Kubernetes DNS]
   insecure-client[client pod] --- server{{"server" k8s service LB}}  --> insecure-server[server pod]
 ```
+
+.image diagrams/notls-k8s.mmd.png _ 700
 
 ## mTLS Code Changes
 
@@ -210,27 +195,7 @@ We can use the tree command to walk the cert directory and print all the files w
 
 ## What Just Happened?
 
-```mermaid
-flowchart TD
-  subgraph u[ ]
-  user[\user/]
-  end
-  subgraph flow
-    direction LR
-    user --o client-key
-    user --o client-cert
-    user --o server-key
-    user --o server-cert
-    user --o ca
-    ca[ca.pem] 
-    ca --- secure-client
-    ca --- secure-server
-    client-key --- client-cert --> secure-client
-    secure-client --> secure-server
-    secure-server --- server-cert --- server-key
-    secure-server -.-> secure-client
-  end
-```
+.image diagrams/mtls-manual.mmd.png 500 _
 
 ## Manual mTLS - Kubernetes Server Changes
 
@@ -274,21 +239,7 @@ Finally, we can create the client and server
 
 ## What Just Happened?
 
-```mermaid
-flowchart LR
-  ca[certificate authority] 
-  ca --- secure-client
-  ca --- secure-server
-  subgraph _[ ]
-    client-key --- client-cert --> secure-client
-    secure-client --> secure-server
-    secure-server --- server-cert --- server-key
-    secure-server -.-> secure-client
-    secure-client ---|server.default.svc.cluster.local| kdns[Kubernetes DNS]
-    secure-client[client pod] --- server{{"server" k8s service LB}}  --> secure-server[server pod]
-end
-```
-
+.image diagrams/mtls-manual-k8s.mmd.png _ 700
 
 ## Flavor 2: Cert-Manager mTLS by Hand
 
