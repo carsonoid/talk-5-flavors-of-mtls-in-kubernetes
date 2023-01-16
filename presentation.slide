@@ -7,15 +7,6 @@ DevX-O, Weave
 
 https://github.com/carsonoid/5-flavors-of-mtls-in-kubernetes
 
-## Foundations of TLS
-
-TODO: Diagram of client-server without tls
-
-TODO: Diagram of client-server with TLS
-
-## Why mTLS?
-
-TODO: Diagram of client-server with mTLS
 
 ## What are we going to do?
 
@@ -25,9 +16,17 @@ TODO: Diagram of client-server with mTLS
 * Cert-Manager mTLS via CSI
 * mTLS via A Service Mesh
 
+## Flavor 0: No TLS
 
+## First: We Need Something to Deploy
 
+To fully illustrate how mTLS works we will write our own app in Go
 
+    * HTTP Server
+    * HTTP Client
+
+Even though we are doing this with our own code and in Go: Basically anything that does mTLS
+will follow the principles we lay down today and work with the same systems.
 
 ## Basic HTTP Code
 
@@ -43,11 +42,48 @@ TODO: Diagram of client-server with mTLS
 
 .play cmd/demo/simple.go /START OMIT/,/END OMIT/
 
+## What Just Happened?
 
+1. Client started a connection to an HTTP server
+2. Server accepted the client connection
+3. Client sent it's entire request payload
+4. Server sent it's response
 
+```mermaid
+graph LR
+    insecure-client --> insecure-server -.-> insecure-client
+```
 
+## What Just Happened?
 
-## Flavor 0: No TLS
+1. Client started a connection to **any** HTTP server
+2. Server accepted **any** client connection
+3. Client sent it's entire request payload
+4. Server sent it's response
+
+```mermaid
+graph LR
+    insecure-client --> insecure-server -.-> insecure-client
+```
+
+## What does that mean?
+
+```mermaid
+graph LR
+    insecure-client --- proxy --> insecure-server -.- proxy -.-> insecure-client
+```
+
+## What does that mean?
+
+```mermaid
+flowchart TD
+    subgraph client[" "]
+    direction LR
+    insecure-client -.- poisoned-dns
+    insecure-client --> fake-server -.-> insecure-client
+    end
+    insecure-server
+```
 
 ## HTTP Server Deployment
 
@@ -84,11 +120,11 @@ Again, no extra security config here.
 
 ## What happened?
 
-TODO: diagram of how this works in k8s
-
-
-
-
+```mermaid
+flowchart LR
+  insecure-client ---|server.default.svc.cluster.local| kdns[Kubernetes DNS]
+  insecure-client[client pod] --- server{{"server" k8s service LB}}  --> insecure-server[server pod]
+```
 
 ## mTLS Code Changes
 
@@ -132,10 +168,9 @@ Finally, start the server.
 
 .code cmd/secure-client/main.go /START CLIENT LOOP OMIT/,/END CLIENT LOOP OMIT/
 
+## Code Demo
 
-
-
-
+Wait... first we need Certificates, Keys, and a Certificate Authority
 
 ## Flavor 1: Manual mTLS
 
@@ -170,6 +205,30 @@ We can use the find command to walk the cert directory and print all the files w
 ## Manual mTLS - Local exec demo
 
 .play mtls/1-manual/cmd-demo.go /START OMIT/,/END OMIT/
+
+## What Just Happened?
+
+```mermaid
+flowchart TD
+  subgraph u[ ]
+  user[\user/]
+  end
+  subgraph flow
+    direction LR
+    user --o client-key
+    user --o client-cert
+    user --o server-key
+    user --o server-cert
+    user --o ca
+    ca[ca.pem] 
+    ca --- secure-client
+    ca --- secure-server
+    client-key --- client-cert --> secure-client
+    secure-client --> secure-server
+    secure-server --- server-cert --- server-key
+    secure-server -.-> secure-client
+  end
+```
 
 ## Manual mTLS - Kubernetes Server Changes
 
@@ -211,8 +270,22 @@ Finally, we can create the client and server
 
 .play mtls/1-manual/k8s-demo.go /START RUN OMIT/,/END RUN OMIT/
 
+## What Just Happened?
 
-
+```mermaid
+flowchart LR
+  ca[certificate authority] 
+  ca --- secure-client
+  ca --- secure-server
+  subgraph _[ ]
+    client-key --- client-cert --> secure-client
+    secure-client --> secure-server
+    secure-server --- server-cert --- server-key
+    secure-server -.-> secure-client
+    secure-client ---|server.default.svc.cluster.local| kdns[Kubernetes DNS]
+    secure-client[client pod] --- server{{"server" k8s service LB}}  --> secure-server[server pod]
+end
+```
 
 
 ## Cert-Manager mTLS by Hand
