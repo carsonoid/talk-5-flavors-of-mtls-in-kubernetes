@@ -7,7 +7,7 @@ const script = `
 set -e
 
 // START OMIT
-find certs -type f
+tree certs
 // END OMIT
 `
 

@@ -40,11 +40,13 @@ func main() {
 	}
 
 	tlsConfig := &tls.Config{
-		ClientCAs:    caCertPool,
-		ClientAuth:   tls.RequireAndVerifyClientCert,
+		// server TLS
 		Certificates: []tls.Certificate{cert},
+
+		// client TLS
+		ClientCAs:  caCertPool,
+		ClientAuth: tls.RequireAndVerifyClientCert,
 	}
-	// tlsConfig.BuildNameToCertificate()
 	// END TLS OMIT
 
 	// START SERVE OMIT
@@ -58,8 +60,8 @@ func main() {
 		// set all routes to simply print request info
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			names := r.TLS.VerifiedChains[0][0].DNSNames
-			fmt.Printf("Verified Client Names: %v\n", names)
-			fmt.Println("Request Headers:", r.Header)
+			fmt.Printf("> Verified Client Names: %v\n", names)
+			fmt.Println("> Request Headers:", r.Header)
 			fmt.Fprintf(w, "Hello %s! Thanks for using mTLS! ",
 				strings.Join(names, "/"))
 		}),

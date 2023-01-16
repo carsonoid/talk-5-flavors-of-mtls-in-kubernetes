@@ -14,13 +14,13 @@ cat > certs/server/csr.json <<EOL
     "hosts": [
         "127.0.0.1",
         "localhost",
-        "server"
+        "server",
+        "server.default.svc.cluster.local"
     ],
     "usages": [
         "server auth",
         "client auth"
     ],
-
     "key": {"algo":"rsa","size":2048},
     "names": [
         {"C":"US","L":"Utah","O":"UT Kubernetes","OU":"Infra","ST":"Utah"}

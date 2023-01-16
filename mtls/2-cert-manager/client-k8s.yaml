@@ -5,7 +5,13 @@ kind: Certificate
 metadata:
   name: client
 spec:
-  secretName: client-tls
+  issuerRef:
+    name: ca-issuer
+    kind: ClusterIssuer
+  commonName: client
+  dnsNames:
+    - client
+    - client.default.svc.cluster.local
   duration: 2160h # 90d
   renewBefore: 360h # 15d
   subject: { organizations: ["UT Kubernetes"] }
@@ -13,14 +19,7 @@ spec:
   usages:
     - server auth
     - client auth
-  commonName: client
-  dnsNames:
-    - client
-  ipAddresses:
-    - 127.0.0.1
-  issuerRef:
-    name: ca-issuer
-    kind: ClusterIssuer
+  secretName: client-tls
 # END CERT OMIT
 ---
 apiVersion: apps/v1

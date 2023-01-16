@@ -9,14 +9,14 @@ const script = `
 set -e
 
 # kill any running servers listening on 8443
-kill $(lsof -t -i:8443) || true
+kill $(lsof -t -i:8443) || true &> /dev/null
 
 # START OMIT
 # Usage: secure-server CERTFILE KEYFILE CAFILE
 go run ../../cmd/secure-server/ \
     certs/server/tls.pem \
     certs/server/tls-key.pem \
-    certs/ca/tls.pem &
+    certs/server/ca.pem &
 
 # Wait for the server to start
 sleep 3
@@ -25,7 +25,7 @@ sleep 3
 go run ../../cmd/secure-client/ \
     certs/client/tls.pem \
     certs/client/tls-key.pem \
-    certs/ca/tls.pem \
+    certs/client/ca.pem \
     https://localhost:8443
 # END OMIT
 `

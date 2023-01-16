@@ -2,11 +2,11 @@ package main
 
 import "github.com/carsonoid/talk-all-the-mtls-in-k8s/internal/demo"
 
-const basePath = `./mtls/1-manual/`
+const basePath = `./mtls/3-cert-manager-csi/`
 const script = `
 #!/bin/bash -e
 
-// START CLUSTER OMIT
+# START CLUSTER OMIT
 # Create the cluster with a shared mount where needed for the csi driver
 k3d cluster create mtls-cert-manager-csi -v ~/k3d/run:/tmp/cert-manager-csi-driver:shared
 
@@ -18,11 +18,19 @@ k3d image import -c mtls-cert-manager-csi app.tar
 
 # START CM OMIT
 # Setup cert-manager + csi driver
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.10.0/cert-manager.yaml
+CMURL=https://github.com/cert-manager/cert-manager/releases/download/v1.10.0/cert-manager.yaml
+kubectl apply -f $CMURL
+
+# Ensure cert-manager is ready
+kubectl -n cert-manager wait --for=condition=Available=True \
+    deployment/cert-manager-cainjector \
+    deployment/cert-manager \
+    deployment/cert-manager-webhook
 
 # Use helm to install the csi driver
 # - don't be fooled by the "upgrade" command
 #   the '-i' flag means install if missing
+helm repo add jetstack https://charts.jetstack.io
 helm upgrade -i -n cert-manager \
   cert-manager-csi-driver \
   jetstack/cert-manager-csi-driver --wait
@@ -34,10 +42,17 @@ kubectl create ns vault
 helm upgrade -i -n vault vault hashicorp/vault \
   --set server.dev.enabled=true \
   --set server.dev.devRootToken=insecure-root-token
+
+# Ensure vault is ready
+kubectl -n vault wait --for=condition=ContainersReady=True --timeout=90s \
+    pod/vault-0
 # END VAULT INSTALL OMIT
 
 # START VAULT OMIT
 kubectl  --namespace=vault port-forward service/vault 8200 &
+
+# ensure port-forward is ready # OMIT
+sleep 2
 
 export VAULT_ADDR=http://localhost:8200
 export VAULT_TOKEN=insecure-root-token
@@ -61,9 +76,8 @@ vault write pki/roles/kube-tls-signer \
     ttl=87600h
 # END VAULT SETUP OMIT
 
-# START CM_ISSUER OMIT
-CA_BASE_64=$(base64 -w0 root_2022_ca.crt)
-kubectl replace -f <(cat <<EOL
+# START CM_ISSUER1 OMIT
+kubectl create -f <(cat <<EOL
 ---
 apiVersion: v1
 kind: Secret
@@ -73,6 +87,12 @@ metadata:
   namespace: cert-manager
 stringData:
   token: insecure-root-token
+EOL
+)
+# END CM_ISSUER1 OMIT
+# START CM_ISSUER2 OMIT
+CA_BASE_64=$(base64 -w0 root_2022_ca.crt)
+kubectl create -f <(cat <<EOL
 ---
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
@@ -89,7 +109,7 @@ spec:
           key: token
 EOL
 )
-# END CM_ISSUER OMIT
+# END CM_ISSUER2 OMIT
 
 # START RUN OMIT
 # Create client and server

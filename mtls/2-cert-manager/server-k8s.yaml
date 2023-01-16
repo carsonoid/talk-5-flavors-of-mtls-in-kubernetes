@@ -5,9 +5,13 @@ kind: Certificate
 metadata:
   name: server
 spec:
-  # START SN OMIT
-  secretName: server-tls
-  # END SN OMIT
+  issuerRef:
+    name: ca-issuer
+    kind: ClusterIssuer
+  commonName: server
+  dnsNames:
+    - server
+    - server.default.svc.cluster.local
   duration: 2160h # 90d
   renewBefore: 360h # 15d
   subject: { organizations: ["UT Kubernetes"] }
@@ -15,14 +19,9 @@ spec:
   usages:
     - server auth
     - client auth
-  commonName: server
-  dnsNames:
-    - server
-  ipAddresses:
-    - 127.0.0.1
-  issuerRef:
-    name: ca-issuer
-    kind: ClusterIssuer
+  # START SN OMIT
+  secretName: server-tls
+  # END SN OMIT
 # END CERT OMIT
 ---
 apiVersion: apps/v1
@@ -79,51 +78,6 @@ spec:
           defaultMode: 420
           secretName: server-tls
       # END VOL OMIT
----
-apiVersion: v1
-kind: Service
-metadata:
-  creationTimestamp: "2022-10-23T23:30:05Z"
-  labels:
-    app: test-server
-  managedFields:
-  - apiVersion: v1
-    fieldsType: FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:labels:
-          .: {}
-          f:app: {}
-      f:spec:
-        f:internalTrafficPolicy: {}
-        f:ports:
-          .: {}
-          k:{"port":8443,"protocol":"TCP"}:
-            .: {}
-            f:port: {}
-            f:protocol: {}
-            f:targetPort: {}
-        f:selector: {}
-        f:sessionAffinity: {}
-        f:type: {}
-    manager: kubectl-expose
-    operation: Update
-    time: "2022-10-23T23:30:05Z"
-  name: server
-  namespace: default
-  resourceVersion: "1298"
-  uid: eeed34c7-7a7f-4a9f-81e0-fe0391c6151a
-spec:
-  clusterIP: 10.43.99.77
-  clusterIPs:
-  - 10.43.99.77
-  internalTrafficPolicy: Cluster
-  ipFamilies:
-  - IPv4
-  ipFamilyPolicy: SingleStack
-  ports:
-  - port: 8443
-    protocol: TCP
 ---
 apiVersion: v1
 kind: Service

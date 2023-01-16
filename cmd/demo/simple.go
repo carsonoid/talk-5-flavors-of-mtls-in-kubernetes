@@ -9,7 +9,7 @@ const script = `
 set -e
 
 # kill any running servers listening on 8080
-kill $(lsof -t -i:8080) || true
+kill $(lsof -t -i:8080) || true &> /dev/null
 
 
 # START OMIT

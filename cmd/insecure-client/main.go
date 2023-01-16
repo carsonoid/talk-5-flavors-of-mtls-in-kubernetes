@@ -19,13 +19,15 @@ func main() {
 	for range time.Tick(time.Second) {
 		resp, err := client.Get(target)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			continue
 		}
 		defer resp.Body.Close()
 
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			continue
 		}
 
 		fmt.Println("< Response Headers:", resp.Header)

@@ -27,7 +27,7 @@ kubectl wait --for=condition=Available=True \
     deployment/test-server deployment/test-client
 
 # Watch the logs
-kubetail --follow --skip-colors
+kubetail --follow -k false
 // END OMIT
 `
 

@@ -1,27 +1,43 @@
 
-#!/bin/bash
+#!/bin/bash -e
 
-set -e
+# START OMIT
+# START CLUSTER OMIT
+# Create the cluster
+k3d cluster create mtls-linkerd
 
-# kill any running servers listening on 8443
-kill $(lsof -t -i:8443) || true
+# Build and inject our test image
+docker build -t carsonoid/go-test-app ../..
+docker save carsonoid/go-test-app -o app.tar
+k3d image import -c mtls-linkerd app.tar
+# END CLUSTER OMIT
+
+# START LINKERD OMIT
+# Install the linkerd CLI
+curl --proto '=https' --tlsv1.2 -sSfL https://run.linkerd.io/install | sh
+
+# Install linkerd
+linkerd check --pre
+linkerd install --crds | kubectl apply -f -
+linkerd install | kubectl apply -f -
+
+# Ensure linkerd is ready
+kubectl -n linkerd wait --for=condition=Available=True \
+  deploy/linkerd-identity \
+  deploy/linkerd-destination \
+  deploy/linkerd-proxy-injector
+
+# END LINKERD OMIT
 
 
+# Create client and server with linkerd sidecars injected
+linkerd inject server-k8s.yaml | kubectl apply -f -
+linkerd inject client-k8s.yaml | kubectl apply -f -
 
-# Usage: secure-server CERTFILE KEYFILE CAFILE
-go run ../../cmd/secure-server/ \
-    certs/server/tls.pem \
-    certs/server/tls-key.pem \
-    certs/ca/tls.pem &
+kubectl wait --for=condition=Available=True \
+  deployment/test-server deployment/test-client
 
-# Wait for the server to start
-sleep 3
-
-# Usage: secure-client CERTFILE KEYFILE CAFILE SERVERURL
-go run ../../cmd/secure-client/ \
-    certs/client/tls.pem \
-    certs/client/tls-key.pem \
-    certs/ca/tls.pem \
-    https://localhost:8443
+kubetail --follow --skip-colors
 
 
+# END OMIT

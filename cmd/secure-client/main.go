@@ -12,19 +12,15 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 4 {
-		fmt.Printf("USAGE: %s CERTFILE KEYFILE CAFILE\n", os.Args[0])
+	if len(os.Args) < 5 {
+		fmt.Printf("USAGE: %s CERTFILE KEYFILE CAFILE TARGET\n", os.Args[0])
 		os.Exit(1)
 	}
 
 	certFile := os.Args[1]
 	keyFile := os.Args[2]
 	caFile := os.Args[3]
-
-	target := "https://localhost:8443"
-	if len(os.Args) >= 5 {
-		target = os.Args[4]
-	}
+	target := os.Args[4]
 	// END CLIENT ARGS OMIT
 
 	// START CLIENT TLS OMIT
@@ -60,18 +56,18 @@ func main() {
 	for range time.Tick(time.Second) {
 		resp, err := client.Get(target)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			continue
 		}
 		defer resp.Body.Close()
 
-		fmt.Println("> Secure connection to: " + resp.TLS.ServerName)
-
 		names := resp.TLS.VerifiedChains[0][0].DNSNames
-		fmt.Println("> Server certificate Names:", names)
+		fmt.Println("< Server certificate Names:", names)
 
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			continue
 		}
 
 		fmt.Println("< Response Headers:", resp.Header)
