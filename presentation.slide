@@ -237,10 +237,6 @@ Finally, we can create the client and server
 
 .play mtls/1-manual/k8s-demo.go /START RUN OMIT/,/END RUN OMIT/
 
-## What Just Happened?
-
-.image diagrams/mtls-manual-k8s.mmd.png _ 700
-
 ## Flavor 2: Cert-Manager mTLS by Hand
 
 ## Cert-Manager mTLS by Hand - Cert-Manger Setup
@@ -304,11 +300,6 @@ New:
 ## Cert-Manager mTLS by Hand - Kubernetes Demo
 
 .play mtls/2-cert-manager/k8s-demo.go /START RUN OMIT/,/END RUN OMIT/
-
-## Cert-Manager mTLS by Hand - What Just Happened?
-
-TODO: Diagram k8s flow
-
 
 
 
@@ -379,10 +370,6 @@ And update the volume - but use `client` this time
 
 .play mtls/3-cert-manager-csi/k8s-demo.go /START RUN OMIT/,/END RUN OMIT/
 
-## Cert-Manager mTLS via CSI - What Happened?
-
-TODO: Diagram what happened
-
 
 
 
@@ -422,8 +409,4 @@ Client deploy Snippet:
 ## Service Mesh (linkerd) - Kubernetes Demo
 
 .play mtls/4-linkerd/k8s-demo.go /START RUN OMIT/,/END RUN OMIT/
-
-## Service Mesh (linkerd) - What Happened?
-
-TODO: Diagram what happened
 

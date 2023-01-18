@@ -3,41 +3,38 @@
 
 # START OMIT
 # START CLUSTER OMIT
-# Create the cluster
-k3d cluster create mtls-linkerd
+k3d cluster create 1-manual
 
-# Build and inject our test image
 docker build -t carsonoid/go-test-app ../..
 docker save carsonoid/go-test-app -o app.tar
-k3d image import -c mtls-linkerd app.tar
+k3d image import -c 1-manual app.tar
 # END CLUSTER OMIT
 
-# START LINKERD OMIT
-# Install the linkerd CLI
-curl --proto '=https' --tlsv1.2 -sSfL https://run.linkerd.io/install | sh
+# START CERTS OMIT
+# Inject server tls secret, delete if it exists to make sure it's up to date
+kubectl delete secret server-tls || true
+kubectl create secret generic server-tls \
+  --from-file=certs/server/tls.pem \
+  --from-file=certs/server/tls-key.pem \
+  --from-file=certs/server/ca.pem
 
-# Install linkerd
-linkerd check --pre
-linkerd install --crds | kubectl apply -f -
-linkerd install | kubectl apply -f -
-
-# Ensure linkerd is ready
-kubectl -n linkerd wait --for=condition=Available=True \
-  deploy/linkerd-identity \
-  deploy/linkerd-destination \
-  deploy/linkerd-proxy-injector
-
-# END LINKERD OMIT
+# Inject client tls secret, delete if it exists to make sure it's up to date
+kubectl delete secret client-tls || true
+kubectl create secret generic client-tls \
+  --from-file=certs/client/tls.pem \
+  --from-file=certs/client/tls-key.pem \
+  --from-file=certs/client/ca.pem
+# END CERTS OMIT
 
 
-# Create client and server with linkerd sidecars injected
-linkerd inject server-k8s.yaml | kubectl apply -f -
-linkerd inject client-k8s.yaml | kubectl apply -f -
+# Create client and server
+kubectl apply -f server-k8s.yaml
+kubectl apply -f client-k8s.yaml
 
 kubectl wait --for=condition=Available=True \
   deployment/test-server deployment/test-client
 
-kubetail --follow --skip-colors
+kubetail --follow -k false
 
 
 # END OMIT
