@@ -1,0 +1,412 @@
+# 5 Flavors of mTLS in Kubernetes
+We can do it!
+
+Carson Anderson
+DevX-O, Weave
+@carson_ops
+
+https://github.com/carsonoid/5-flavors-of-mtls-in-kubernetes
+
+
+## What are we going to do?
+
+0. No mTLS
+1. Manual mTLS
+2. Cert-Manager mTLS by Hand
+3. Cert-Manager mTLS via CSI
+4. mTLS via A Service Mesh
+
+## Flavor 0: No mTLS
+
+## First: We Need Something to Deploy
+
+To fully illustrate how mTLS works we will write our own app in Go
+
+* HTTP Server
+* HTTP Client
+
+Even though we are doing this with our own code and in Go: Basically anything that does mTLS
+will follow the principles we lay down today and work with the same systems.
+
+## Basic HTTP Code
+
+## HTTP Server Code
+
+.code cmd/insecure-server/main.go /^func main\(\) \{/,/^\}/
+
+## HTTP Client Code
+
+.code cmd/insecure-client/main.go  /^func main\(\) \{/,/^\}/
+
+## Code Demo
+
+.play cmd/demo/simple.go /START OMIT/,/END OMIT/
+
+## What Just Happened?
+
+1. Client started a connection to an HTTP server
+2. Server accepted the client connection
+3. Client sent it's entire request payload
+4. Server sent it's response
+
+.image diagrams/basic.mmd.png _ 700
+
+## What Just Happened?
+
+1. Client started a connection to **any** HTTP server
+2. Server accepted **any** client connection
+3. Client sent it's entire request payload
+4. Server sent it's response
+
+.image diagrams/basic.mmd.png _ 700
+
+## What does that mean?
+
+.image diagrams/basic-proxy.mmd.png _ 700
+
+## What does that mean?
+
+.image diagrams/basic-poison.mmd.png _ 700
+
+## Flavor 0 - No mTLS: Deployment
+
+## HTTP Server Deployment
+
+.code mtls/0-none/server-k8s.yaml /^# Deployment/,/# END DEPLOYMENT OMIT/
+
+## HTTP Server Deployment - Args
+
+We can simply run the server process, nothing extra is required
+
+.code mtls/0-none/server-k8s.yaml /START FOCUS OMIT/,/END FOCUS OMIT/
+
+## HTTP Server Service
+
+.code mtls/0-none/server-k8s.yaml /template:$/,/END LABELS OMIT/
+
+.code mtls/0-none/server-k8s.yaml /# Service/,/type: ClusterIP/
+
+## HTTP Client Deployment
+
+.code mtls/0-none/client-k8s.yaml /^# Deployment/,/# END DEPLOYMENT OMIT/
+
+## HTTP Client Deployment - Args
+
+The client just needs to know where the server is. So we can easily point it
+at the Kubernetes DNS entry for our server service.
+
+Again, no extra security config here.
+
+.code mtls/0-none/client-k8s.yaml /START FOCUS OMIT/,/END FOCUS OMIT/
+
+## Kubernetes Demo
+
+.play -edit mtls/0-none/present.go /START OMIT/,/END OMIT/
+
+## What happened?
+
+```mermaid
+flowchart LR
+  insecure-client ---|server.default.svc.cluster.local| kdns[Kubernetes DNS]
+  insecure-client[client pod] --- server{{"server" k8s service LB}}  --> insecure-server[server pod]
+```
+
+.image diagrams/notls-k8s.mmd.png _ 700
+
+## mTLS Code Changes
+
+## HTTPS Server Code
+
+First, we need args to tell us where the ca, cert, and key are.
+
+.code cmd/secure-server/main.go /^func main\(\) \{/,/END ARGS OMIT/
+
+## HTTPS Server Code
+
+Now build a cert pool, load the default root certs and add our self-signed
+
+.code cmd/secure-server/main.go /START CA OMIT/,/END CA OMIT/
+
+## HTTPS Server Code
+
+Next, load the keypair and create a tls config.
+
+.code cmd/secure-server/main.go /START TLS OMIT/,/END TLS OMIT/
+
+## HTTPS Server Code
+
+Finally, start the server.
+
+.code cmd/secure-server/main.go /START SERVE OMIT/,/END SERVE OMIT/
+
+## HTTPS Client Code
+
+.code cmd/secure-client/main.go /^func main\(\) \{/,/END CLIENT ARGS OMIT/
+
+## HTTPS Client Code
+
+.code cmd/secure-client/main.go /START CLIENT TLS OMIT/,/END CLIENT TLS OMIT/
+
+## HTTPS Client Code
+
+.code cmd/secure-client/main.go /START CLIENT OMIT/,/END CLIENT OMIT/
+
+## HTTPS Client Code
+
+.code cmd/secure-client/main.go /START CLIENT LOOP OMIT/,/END CLIENT LOOP OMIT/
+
+## Code Demo
+
+Wait... first we need Certificates, Keys, and a Certificate Authority
+
+## Flavor 1: Manual mTLS
+
+## Certificate Generation
+
+One way to manually generate certs is to use CFSSL.
+
+There are many ways to do this
+but CFSSL is one of the easiest since it allows for JSON based configuration
+and can even be ran as a service.
+
+.link https://github.com/cloudflare/cfssl
+
+## Manual mTLS - Generate CA
+
+.play mtls/1-manual/ca-gen.go /START OMIT/,/END OMIT/
+
+## Manual mTLS - Generate Server Files
+
+.play mtls/1-manual/server-gen.go /START OMIT/,/END OMIT/
+
+## Manual mTLS - Generate Client Files
+
+.play mtls/1-manual/client-gen.go /START OMIT/,/END OMIT/
+
+## Manual mTLS - Generated Files
+
+We can use the tree command to walk the cert directory and print all the files we generated
+
+.play mtls/1-manual/summary.go /START OMIT/,/END OMIT/
+
+## Manual mTLS - Local exec demo
+
+.play mtls/1-manual/cmd-demo.go /START OMIT/,/END OMIT/
+
+## What Just Happened?
+
+.image diagrams/mtls-manual.mmd.png 500 _
+
+## Manual mTLS - Kubernetes Server Changes
+
+## Manual mTLS - Volume Mount and Use
+
+Mount a k8s secret (we will create this later) as a volume
+
+.code mtls/1-manual/server-k8s.yaml /START VOL OMIT/,/END VOL OMIT/
+
+.code mtls/1-manual/server-k8s.yaml /START MOUNT OMIT/,/END MOUNT OMIT/
+
+This will result in all the keys in the secret created as files in the `mountPath`. So the args can be updated to:
+
+.code mtls/1-manual/server-k8s.yaml /START ARGS OMIT/,/END ARGS OMIT/
+
+## Manual mTLS - Kubernetes Client Changes
+
+## Manual mTLS - Volume Mount and Use
+
+Basically identical to the Server changes but with a different secret name
+
+.code mtls/1-manual/client-k8s.yaml /START VOL OMIT/,/END VOL OMIT/
+
+.code mtls/1-manual/client-k8s.yaml /START MOUNT OMIT/,/END MOUNT OMIT/
+
+.code mtls/1-manual/client-k8s.yaml /START ARGS OMIT/,/END ARGS OMIT/
+
+## Manual mTLS - Kubernetes Demo
+
+## Manual mTLS - Create Secrets
+
+NEW: We have to run commands to create the required secrets for the client and server
+
+.code mtls/1-manual/k8s-demo.go /START CERTS OMIT/,/END CERTS OMIT/
+
+## Manual mTLS - Deployments
+
+Finally, we can create the client and server
+
+.play mtls/1-manual/k8s-demo.go /START RUN OMIT/,/END RUN OMIT/
+
+## Flavor 2: Cert-Manager mTLS by Hand
+
+## Cert-Manager mTLS by Hand - Cert-Manger Setup
+
+This can be done whatever way works best for your cluster, but for our demo we just init the basics:
+
+.code mtls/2-cert-manager/k8s-demo.go /START CM OMIT/,/END CM OMIT/
+
+## Cert-Manager mTLS by Hand - Cert-Manger CA Issue
+
+We still need to issue a CA cert and key and create it
+
+.code mtls/2-cert-manager/k8s-demo.go /START CA OMIT/,/END CA OMIT/
+
+## Cert-Manager mTLS by Hand - Cert-Manger Issuer
+
+Next, we create a `ClusterIssuer` to tell cert-manager how to find the ca cert for issuing new certs
+
+.code mtls/2-cert-manager/k8s-demo.go /START ISSUER OMIT/,/END ISSUER OMIT/
+
+## Cert-Manager mTLS by Hand - Kubernetes Server Cert
+
+.code mtls/2-cert-manager/server-k8s.yaml /START CERT OMIT/,/END CERT OMIT/
+
+## Cert-Manager mTLS by Hand - Kubernetes Server Changes
+
+Since we we told cert-manager to create the secret at the name we already expect we do not have to change the volume info
+
+.code mtls/2-cert-manager/server-k8s.yaml /START SN OMIT/,/END SN OMIT/
+
+.code mtls/2-cert-manager/server-k8s.yaml /START VOL OMIT/,/END VOL OMIT/
+
+## Cert-Manager mTLS by Hand - Kubernetes Server Changes
+
+BUT! cert-manager makes the secret with different key names, so we have to tweak our args
+
+Old:
+
+.code mtls/1-manual/server-k8s.yaml /START ARGS OMIT/,/END ARGS OMIT/
+
+New:
+
+.code mtls/2-cert-manager/server-k8s.yaml /START ARGS OMIT/,/END ARGS OMIT/
+
+## Cert-Manager mTLS by Hand - Kubernetes Client Cert
+
+.code mtls/2-cert-manager/client-k8s.yaml /START CERT OMIT/,/END CERT OMIT/
+
+## Cert-Manager mTLS by Hand - Kubernetes Client Changes
+
+Just like with the server, we only need to change the args:
+
+Old:
+
+.code mtls/1-manual/client-k8s.yaml /START ARGS OMIT/,/END ARGS OMIT/
+
+New:
+
+.code mtls/2-cert-manager/client-k8s.yaml /START ARGS OMIT/,/END ARGS OMIT/
+
+## Cert-Manager mTLS by Hand - Kubernetes Demo
+
+.play mtls/2-cert-manager/k8s-demo.go /START RUN OMIT/,/END RUN OMIT/
+
+
+
+
+## Flavor 3: Cert-Manager mTLS via CSI
+
+## Cert-Manager mTLS via CSI - Cert-Manger Setup
+
+.code mtls/3-cert-manager-csi/k8s-demo.go /START CM OMIT/,/END CM OMIT/
+
+## Cert-Manager mTLS via CSI - Vault Install
+
+A self-signed CA is not supported for CSI so we need a proper PKI provider.
+So we will setup a dev-quality vault install to use for PKI.
+
+
+.code mtls/3-cert-manager-csi/k8s-demo.go /START VAULT INSTALL OMIT/,/END VAULT INSTALL OMIT/
+
+> Since we installed vault as a dev server instance, all vault settings and data will
+> be lost when the active vault pod is deleted.
+
+> You could use cloud services for PKI,
+  but vault is agnostic so it's the one used for the demo
+
+## Cert-Manager mTLS via CSI - Vault Prep
+
+Setup a port forward and env vars to Vault so we can configure it with the CLI
+
+.code mtls/3-cert-manager-csi/k8s-demo.go /START VAULT OMIT/,/END VAULT OMIT/
+
+> Not shown: Install the `vault` CLI
+
+## Cert-Manager mTLS via CSI - Vault Setup
+
+.code mtls/3-cert-manager-csi/k8s-demo.go /START VAULT SETUP OMIT/,/END VAULT SETUP OMIT/
+
+## Cert-Manager mTLS via CSI - ClusterIssuer Setup
+
+.code mtls/3-cert-manager-csi/k8s-demo.go /START CM_ISSUER1 OMIT/,/END CM_ISSUER1 OMIT/
+
+## Cert-Manager mTLS via CSI - ClusterIssuer Setup
+
+.code mtls/3-cert-manager-csi/k8s-demo.go /START CM_ISSUER2 OMIT/,/END CM_ISSUER2 OMIT/
+
+## Cert-Manager mTLS via CSI - Kubernetes Server Changes
+
+We do not need to create a `Certificate` anymore!
+
+.code mtls/3-cert-manager-csi/cert-gone.yaml
+
+Instead we just put all the details in the volume.
+
+## Cert-Manager mTLS via CSI - Server CSI Volume
+
+.code mtls/3-cert-manager-csi/server-k8s.yaml /START VOL OMIT/,/END VOL OMIT/
+
+## Cert-Manager mTLS via CSI - Client CSI Volume
+
+The client setup is identical no more cert:
+
+.code mtls/3-cert-manager-csi/cert-gone.yaml
+
+And update the volume - but use `client` this time
+
+.code mtls/3-cert-manager-csi/client-k8s.yaml /START VOL OMIT/,/END VOL OMIT/
+
+## Cert-Manager mTLS via CSI - Kubernetes Demo
+
+.play mtls/3-cert-manager-csi/k8s-demo.go /START RUN OMIT/,/END RUN OMIT/
+
+
+
+
+
+## Flavor 4: mTLS via A Service Mesh
+
+## Service Mesh (linkerd) - Setup
+
+.code mtls/4-linkerd/k8s-demo.go /START LINKERD OMIT/,/END LINKERD OMIT/
+
+## Service Mesh (linkerd) - Code Changes
+
+The whole point of a Service Mesh is that the mtls happens outside the app.
+
+So our deployments now revert to the "insecure" versions because the mTLS is automatic
+
+## Service Mesh (linkerd) - Server Code
+
+.code cmd/insecure-server/main.go /^func main\(\) \{/,/^\}/
+
+## Service Mesh (linkerd) - Client Code
+
+.code cmd/insecure-client/main.go /^func main\(\) \{/,/^\}/
+
+## Service Mesh (linkerd) - Deployment Changes
+
+Again, we simply revert our `Deployments` to the original yaml with no mTLS config
+
+Server deploy Snippet:
+
+.code mtls/0-none/server-k8s.yaml /START FOCUS OMIT/,/END FOCUS OMIT/
+
+Client deploy Snippet:
+
+.code mtls/0-none/client-k8s.yaml /START FOCUS OMIT/,/END FOCUS OMIT/
+
+## Service Mesh (linkerd) - Kubernetes Demo
+
+.play mtls/4-linkerd/k8s-demo.go /START RUN OMIT/,/END RUN OMIT/
+

@@ -1,0 +1,77 @@
+# START CERT OMIT
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: client
+spec:
+  issuerRef:
+    name: ca-issuer
+    kind: ClusterIssuer
+  commonName: client
+  dnsNames:
+    - client
+    - client.default.svc.cluster.local
+  duration: 2160h # 90d
+  renewBefore: 360h # 15d
+  subject: { organizations: ["UT Kubernetes"] }
+  privateKey: { algorithm: RSA, encoding: PKCS1, size: 2048 }
+  usages:
+    - server auth
+    - client auth
+  secretName: client-tls
+# END CERT OMIT
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: test-client
+  name: test-client
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: test-client
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: test-client
+    spec:
+      containers:
+      - name: go-test-app
+        # START ARGS OMIT
+        args:
+        - /secure-client
+        - /tls/tls.crt
+        - /tls/tls.key
+        - /tls/ca.crt
+        - https://server:8443
+        # END ARGS OMIT
+        image: carsonoid/go-test-app
+        imagePullPolicy: Never
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /tls
+          name: tls
+          readOnly: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: tls
+        secret:
+          defaultMode: 420
+          secretName: client-tls

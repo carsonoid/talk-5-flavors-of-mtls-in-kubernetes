@@ -1,0 +1,62 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: test-client
+  name: test-client
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: test-client
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: test-client
+    spec:
+      containers:
+      - args:
+        - /secure-client
+        - /tls/tls.crt
+        - /tls/tls.key
+        - /tls/ca.crt
+        - https://server.default.svc.cluster.local.:8443
+        image: carsonoid/go-test-app
+        imagePullPolicy: Never
+        name: go-test-app
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /tls
+          name: tls
+          readOnly: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      # START VOL OMIT
+      volumes:
+        - name: tls
+          csi:
+            readOnly: true
+            driver: csi.cert-manager.io
+            volumeAttributes:
+              csi.cert-manager.io/issuer-kind: ClusterIssuer
+              csi.cert-manager.io/issuer-name: vault-issuer
+              csi.cert-manager.io/dns-names: client,
+                client.${POD_NAMESPACE},
+                client.${POD_NAMESPACE}.svc.cluster.local.,
+                ${POD_NAME}.${POD_NAMESPACE}.svc.cluster.local.
+              csi.cert-manager.io/common-name: client
+      # END VOL OMIT

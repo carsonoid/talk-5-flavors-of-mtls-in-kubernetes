@@ -1,0 +1,50 @@
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-server
+  template:
+    # set pod labels
+    metadata:
+      labels:
+        app: test-server
+      # END LABELS OMIT
+    spec:
+      containers:
+      # START FOCUS OMIT
+      - name: go-test-app
+        image: carsonoid/go-test-app
+        args:
+        - /insecure-server
+        # END FOCUS OMIT
+        imagePullPolicy: Never
+      dnsPolicy: ClusterFirst
+      # ...
+      # END DEPLOYMENT OMIT
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: test-server
+  name: server
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: test-server
+  sessionAffinity: None
+  type: ClusterIP

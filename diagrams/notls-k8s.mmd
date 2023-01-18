@@ -1,0 +1,3 @@
+flowchart TD
+  insecure-client ---|server.default.svc.cluster.local| kdns[Kubernetes DNS]
+  insecure-client[client pod] --- server{{"server" k8s service LB}}  --> insecure-server[server pod]

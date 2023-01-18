@@ -1,0 +1,84 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: test-server
+  name: test-server
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: test-server
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: test-server
+    spec:
+      containers:
+      - args:
+        - /secure-server
+        - /tls/tls.crt
+        - /tls/tls.key
+        - /tls/ca.crt
+        image: carsonoid/go-test-app
+        imagePullPolicy: Never
+        name: go-test-app
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /tls
+          name: tls
+          readOnly: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      # START VOL OMIT
+      volumes:
+        - name: tls
+          csi:
+            readOnly: true
+            driver: csi.cert-manager.io
+            volumeAttributes:
+              csi.cert-manager.io/issuer-kind: ClusterIssuer
+              csi.cert-manager.io/issuer-name: vault-issuer
+
+              # There are many valid k8s dns entries for the service
+              # so we need to enumerate them all here.
+              # We also include the full name of the pod here as well
+              csi.cert-manager.io/dns-names: server,
+                server.${POD_NAMESPACE},
+                server.${POD_NAMESPACE}.svc.cluster.local.,
+                ${POD_NAME}.${POD_NAMESPACE}.svc.cluster.local.
+
+              # Common Name has been deprecated since **the year 2000**
+              # but it's included here to show that it *is* possible to set
+              csi.cert-manager.io/common-name: server
+      # END VOL OMIT
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: test-server
+  name: server
+spec:
+  ports:
+  - port: 8443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app: test-server
+  sessionAffinity: None
+  type: ClusterIP

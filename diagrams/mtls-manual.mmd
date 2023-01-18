@@ -1,0 +1,19 @@
+flowchart TD
+  subgraph u[ ]
+  user[\user/]
+  end
+  subgraph _[ ]
+    direction LR
+    user --o client-key
+    user --o client-cert
+    user --o server-key
+    user --o server-cert
+    user --o ca
+    ca[ca.pem] 
+    ca --- secure-client
+    ca --- secure-server
+    client-key --- client-cert --> secure-client
+    secure-client --> secure-server
+    secure-server --- server-cert --- server-key
+    secure-server -.-> secure-client
+  end
