@@ -5,7 +5,7 @@ Carson Anderson
 DevX-O, Weave
 @carson_ops
 
-https://github.com/carsonoid/5-flavors-of-mtls-in-kubernetes
+https://github.com/carsonoid/talk-5-flavors-of-mtls-in-kubernetes
 
 
 ## What are we going to do?
@@ -15,6 +15,8 @@ https://github.com/carsonoid/5-flavors-of-mtls-in-kubernetes
 2. Cert-Manager mTLS by Hand
 3. Cert-Manager mTLS via CSI
 4. mTLS via A Service Mesh
+
+https://github.com/carsonoid/talk-5-flavors-of-mtls-in-kubernetes
 
 ## Flavor 0: No mTLS
 
@@ -192,10 +194,6 @@ We can use the tree command to walk the cert directory and print all the files w
 ## Manual mTLS - Local exec demo
 
 .play mtls/1-manual/cmd-demo.go /START OMIT/,/END OMIT/
-
-## What Just Happened?
-
-.image diagrams/mtls-manual.mmd.png 500 _
 
 ## Manual mTLS - Kubernetes Server Changes
 
